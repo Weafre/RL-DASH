@@ -105,7 +105,7 @@ private:
    */
   enum controllerEvent
   {
-    downloadFinished, playbackFinished, irdFinished, init,bufferOverflow
+    bufferOverrun,downloadFinished, playbackFinished, irdFinished, init
   };
   AdaptationAlgorithm *algo;
 

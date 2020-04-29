@@ -79,6 +79,10 @@ RLAlgorithm::GetNextRep(const int64_t segmentCounter, int64_t clientId) {
       
     }
     m_repindex =  myGymEnv->GetRepIndex();
+   // if(m_bufferData.bufferLevelNew>40)
+   // {
+      //answer.nextDownloadDelay =m_videoData.segment
+    //}
     answer.nextRepIndex =  m_repindex;//update index here weafre
         
     return answer;

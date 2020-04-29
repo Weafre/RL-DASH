@@ -1,3 +1,6 @@
+Introduction
+============
+This repo implements reinforcement learning adaptation algorithms based on ns3 simulation and opengym-ai environment. I am using ns3-gym and dash meets ns3 modudle from [1] and [2].
 ns3-gym
 ============
 
@@ -153,19 +156,10 @@ Contact
 * Anatolij Zubow, TU-Berlin, zubow@tkn
 * tkn = tkn.tu-berlin.de
 
-How to reference ns3-gym?
+REFERENCES
 ============
 
-Please use the following bibtex :
-
-```
-@inproceedings{ns3gym,
-  Title = {{ns-3 meets OpenAI Gym: The Playground for Machine Learning in Networking Research}},
-  Author = {Gaw{\l}owicz, Piotr and Zubow, Anatolij},
-  Booktitle = {{ACM International Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems (MSWiM)}},
-  Year = {2019},
-  Location = {Miami Beach, USA},
-  Month = {November},
-  Url = {http://www.tkn.tu-berlin.de/fileadmin/fg112/Papers/2019/gawlowicz19_mswim.pdf}
-}
-```
+[1] https://github.com/tkn-tub/ns3-gym
+[2] https://github.com/peterbangert/dash-meets-ns3gym
+[3] https://github.com/haraldott/dash
+[4] NS3 tutorial: https://www.nsnam.org/docs/tutorial/html/conceptual-overview.html#a-first-ns-3-script

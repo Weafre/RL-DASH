@@ -274,6 +274,7 @@ private:
   int64_t m_segmentCounter; //!< The index of the next segment to be downloaded
   int64_t m_transmissionStartReceivingSegment; //!< The point in time in microseconds when the transmission of a segment begins
   int64_t m_transmissionEndReceivingSegment; //!< The point in time in microseconds when the transmission of a segment is finished
+  
   int64_t m_bytesReceived; //!< Counts the amount of received bytes of the current packet
   int64_t m_bDelay;  //!< Minimum buffer level in microseconds of playback when the next download must be started
   int64_t m_bufferMax;//maximum buffer capacity weafre

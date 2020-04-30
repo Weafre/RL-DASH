@@ -15,6 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 #include "ns3/log.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ipv6-address.h"
@@ -605,12 +606,15 @@ void
 TcpStreamClient::LogDownload ()
 {
   NS_LOG_FUNCTION (this);
+  //throughput at bytes per second
+  double current_throughput = m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter)* (double)8000000/(m_transmissionEndReceivingSegment- m_transmissionStartReceivingSegment );
   downloadLog << std::setfill (' ') << std::setw (13) << m_segmentCounter << " "
               << std::setfill (' ') << std::setw (21) << m_downloadRequestSent / (double)1000000 << " "
               << std::setfill (' ') << std::setw (14) << m_transmissionStartReceivingSegment / (double)1000000 << " "
               << std::setfill (' ') << std::setw (12) << m_transmissionEndReceivingSegment / (double)1000000 << " "
               << std::setfill (' ') << std::setw (12) << m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter) << " "
               << std::setfill (' ') << std::setw (12) << m_videoData.averageBitrate.at(m_currentRepIndex) << " "
+              << std::setfill (' ') << std::setw (10) << current_throughput << " "
               << std::setfill (' ') << std::setw (12) << "1\n";
   downloadLog.flush ();
 }
@@ -656,7 +660,7 @@ TcpStreamClient::InitializeLogFiles (std::string simulationId, std::string clien
   std::string dLog = dashLogDirectory + m_algoName + "/" +  numberOfClients  + "/" + simulationId + "/" + "cl" + clientId + "_"  + "downloadLog.txt";
   //NS_LOG_UNCOND(dLog);//weafre
   downloadLog.open (dLog.c_str ());
-  downloadLog << "Segment_Index Download_Request_Sent Download_Start Download_End Segment_Size averageBitrate Download_OK\n";
+  downloadLog << "Segment_Index Download_Request_Sent Download_Start Download_End Segment_Size averageBitrate Throuhgput Download_OK\n";
   downloadLog.flush ();
 
   std::string pLog = dashLogDirectory + m_algoName + "/" +  numberOfClients  + "/" + simulationId + "/" + "cl" + clientId + "_"  + "playbackLog.txt";

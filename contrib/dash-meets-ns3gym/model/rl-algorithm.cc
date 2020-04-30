@@ -24,7 +24,7 @@ RLAlgorithm::RLAlgorithm(const videoData &videoData,
                          const bufferData &bufferData,
                          const throughputData &throughput,
                          int numberOfClients,
-                         int simulationId) :
+                         std::string simulationId) :
 
     AdaptationAlgorithm(videoData, playbackData, bufferData, throughput),
     m_highestRepIndex (videoData.averageBitrate.size () - 1),

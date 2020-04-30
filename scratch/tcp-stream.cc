@@ -64,17 +64,21 @@ main (int argc, char *argv[])
  }
 
   uint64_t segmentDuration;
+  uint64_t bufferMax;
+
   // The simulation id is used to distinguish log file results from potentially multiple consequent simulation runs.
-  uint32_t simulationId;
+  std::string simulationId;
   uint32_t numberOfClients;
   std::string adaptationAlgo;
   std::string segmentSizeFilePath;
+
 
   bool shortGuardInterval = true;
 
   CommandLine cmd;
   cmd.Usage ("Simulation of streaming with DASH.\n");
   cmd.AddValue ("simulationId", "The simulation's index (for logging purposes)", simulationId);
+  cmd.AddValue ("maxBuffer", "The simulation's index (for logging purposes)", bufferMax);
   cmd.AddValue ("numberOfClients", "The number of clients", numberOfClients);
   cmd.AddValue ("segmentDuration", "The duration of a video segment in microseconds", segmentDuration);
   cmd.AddValue ("adaptationAlgo", "The adaptation algorithm that the client uses for the simulation", adaptationAlgo);
@@ -231,7 +235,7 @@ main (int argc, char *argv[])
 
 
   Ptr<RandomRoomPositionAllocator> randPosAlloc = CreateObject<RandomRoomPositionAllocator> ();
-  randPosAlloc->AssignStreams (simulationId);
+  randPosAlloc->AssignStreams (bufferMax);
 
   // create folder so we can log the positions of the clients
   const char * mylogsDir = dashLogDirectory.c_str();
@@ -240,7 +244,10 @@ main (int argc, char *argv[])
   std::string algodirstr (dashLogDirectory +  adaptationAlgo );  
   const char * algodir = algodirstr.c_str();
   mkdir (algodir, 0775);
-  std::string dirstr (dashLogDirectory + adaptationAlgo + "/" + ToString (numberOfClients) + "/");
+  //std::string dirstr (dashLogDirectory + adaptationAlgo + "/" + ToString (numberOfClients) + "/");
+  //const char * dir = dirstr.c_str();
+  //mkdir(dir, 0775);
+  std::string dirstr (dashLogDirectory + adaptationAlgo + "/" + ToString (numberOfClients) + "/"+simulationId+"/");
   const char * dir = dirstr.c_str();
   mkdir(dir, 0775);
 //end addition part
@@ -253,7 +260,7 @@ main (int argc, char *argv[])
   mkdir(dir, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 //finish old code*/
   std::ofstream clientPosLog;
-  std::string clientPos = dashLogDirectory + "/" + adaptationAlgo + "/" + ToString (numberOfClients) + "/" + "sim" + ToString (simulationId) + "_"  + "clientPos.txt";
+  std::string clientPos = dashLogDirectory + "/" + adaptationAlgo + "/" + ToString (numberOfClients) + "/"+simulationId+"/" + "sim" + ToString (simulationId) + "_"  + "clientPos.txt";
   clientPosLog.open (clientPos.c_str());
   NS_ASSERT_MSG (clientPosLog.is_open(), "Couldn't open clientPosLog file");
 
@@ -293,7 +300,9 @@ main (int argc, char *argv[])
   clientHelper.SetAttribute ("SegmentDuration", UintegerValue (segmentDuration));
   clientHelper.SetAttribute ("SegmentSizeFilePath", StringValue (segmentSizeFilePath));
   clientHelper.SetAttribute ("NumberOfClients", UintegerValue(numberOfClients));
-  clientHelper.SetAttribute ("SimulationId", UintegerValue (simulationId));
+  clientHelper.SetAttribute ("SimulationId", StringValue (simulationId));
+  clientHelper.SetAttribute ("maxBuffer", UintegerValue (bufferMax));//weafre
+
   ApplicationContainer clientApps = clientHelper.Install (clients);//install client application weafre
   for (uint i = 0; i < clientApps.GetN (); i++)
     {
@@ -303,7 +312,7 @@ main (int argc, char *argv[])
 
 
   NS_LOG_INFO ("Run Simulation.");
-  NS_LOG_INFO ("Sim: " << simulationId << "Clients: " << numberOfClients);
+  NS_LOG_INFO ("Sim: " << simulationId << "\nClients: " << numberOfClients);
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");

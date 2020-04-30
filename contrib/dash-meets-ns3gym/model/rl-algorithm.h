@@ -21,7 +21,7 @@ public:
 			 const bufferData & bufferData,
 			 const throughputData & throughput,
               int  numberOfClients,
-              int simulationId);
+              std::string simulationId);
 
 	algorithmReply GetNextRep ( const int64_t segmentCounter, int64_t clientId);
 

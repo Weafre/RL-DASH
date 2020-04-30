@@ -105,7 +105,7 @@ private:
    */
   enum controllerEvent
   {
-    bufferOverrun,downloadFinished, playbackFinished, irdFinished, init
+    bufferOverrunev,downloadFinished, playbackFinished, irdFinished, init
   };
   AdaptationAlgorithm *algo;
 
@@ -261,7 +261,7 @@ private:
   uint16_t m_peerPort; //!< Remote peer port
 
   uint16_t m_clientId; //!< The Id of this client, for logging purposes
-  uint16_t m_simulationId; //!< The Id of this simulation, for logging purposes
+  std::string m_simulationId; //!< The Id of this simulation, for logging purposes
   uint16_t m_numberOfClients; //!< The total number of clients for this simulation, for logging purposes
   std::string m_segmentSizeFilePath; //!< The relative path (from ns-3.x directory) to the file containing the segment sizes in bytes
   std::string m_algoName;//!< Name of the apation algorithm's class which this client will use for the simulation
@@ -276,6 +276,8 @@ private:
   int64_t m_transmissionEndReceivingSegment; //!< The point in time in microseconds when the transmission of a segment is finished
   int64_t m_bytesReceived; //!< Counts the amount of received bytes of the current packet
   int64_t m_bDelay;  //!< Minimum buffer level in microseconds of playback when the next download must be started
+  int64_t m_bufferMax;//maximum buffer capacity weafre
+  bool m_bufferOverrun;// whether buffer exceed maximum buffer capacity or not weafre
   int64_t m_highestRepIndex; //!< This is the index of the highest representation
   uint64_t m_segmentDuration; //!< The duration of a segment in microseconds
 

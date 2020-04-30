@@ -63,27 +63,20 @@ void
 TcpStreamClient::Controller (controllerEvent event)
 {
   NS_LOG_FUNCTION (this);
-
   if (state == initial)
     {
       RequestRepIndex ();
       state = downloading;
       Send (m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter));
       return;
-      //query: why do not have schedule here, after downloading the first segment weafre
     }
 
   if (state == downloading)
-    { NS_LOG_UNCOND("State: " << state);//weafre
-    //segment truoc chi download va ko play
-      // case 1: vua moi start, va muon download de fill buffer da
-      //case 2: da download het segmnet, chi play thoi
-      //NS_LOG_UNCOND("Buffer level: " << m_segmentsInBuffer);//weafre
-      PlaybackHandle ();//run after switching state, all states ended by a segment duration timer weafre
-      
+    {
+      PlaybackHandle ();
       if (m_currentPlaybackIndex <= m_lastSegmentIndex)
         {
-          /*  e_d  not playing the last segment then continue request next segment */
+          /*  e_d  */
           m_segmentCounter++;
           RequestRepIndex ();
           state = downloadingPlaying;
@@ -91,87 +84,66 @@ TcpStreamClient::Controller (controllerEvent event)
         }
       else
         {
-
-          /*  e_df neu dang la segment cuoi thi ko request nua  */
+          /*  e_df  */
           state = playing;
         }
       controllerEvent ev = playbackFinished;
       // std::cerr << "Client " << m_clientId << " " << Simulator::Now ().GetSeconds () << "\n";
-      //delay a m_videoData.segmentDuration second  befor continue
       Simulator::Schedule (MicroSeconds (m_videoData.segmentDuration), &TcpStreamClient::Controller, this, ev);
       return;
     }
 
 
   else if (state == downloadingPlaying)
-    {/*case 1: ket thuc downloading
-      -- neu chua phai segment cuoi ==> download tiep
-      -- new co m_bDelay , client se delay m-bDlay milisecond)==> play only
-      -- neu la segment cuoi thi cung chi play
-      */
-    NS_LOG_UNCOND("State: " << state);//weafre
+    {
       if (event == downloadFinished)
         {
-        /*  if(m_segmentsInBuffer ==15)
+          if(bufferOverrun)
           {
-            NS_LOG_UNCOND("debug: 1" );//weafre
+            //NS_LOG_UNCOND("------- 1" );//weafre
             //buffer overrun
             state = playing;
             //controllerEvent ev = bufferOverrun;
           }
           else 
-          {*/
-          if (m_segmentCounter < m_lastSegmentIndex && m_bDelay == 0 )
-            {
-              NS_LOG_UNCOND("debug: 2" );//weafre
-              m_segmentCounter++;
-              RequestRepIndex ();
+          {
+            if (m_segmentCounter < m_lastSegmentIndex)
+              {
+                m_segmentCounter++;
+                RequestRepIndex ();
+              }
 
-            }
-
-          if (m_bDelay > 0 && m_segmentCounter <= m_lastSegmentIndex)
-            {
-              /*  e_dirs */
-              NS_LOG_UNCOND("debug: 3" );//weafre
-              state = playing;
-              controllerEvent ev = irdFinished;
-              Simulator::Schedule (MicroSeconds (m_bDelay), &TcpStreamClient::Controller, this, ev);
-            }
-          else if (m_segmentCounter == m_lastSegmentIndex )
-            {
-              /*  e_df  */
-              NS_LOG_UNCOND("debug: 4" );//weafre
-              state = playing;
-            }
-
-          else
-            {
-              /*  e_d  download next segment after all*/
-              NS_LOG_UNCOND("debug: 5" );//weafre
-              Send (m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter));
-              
-              
-            }
+            if (m_bDelay > 0 && m_segmentCounter <= m_lastSegmentIndex)
+              {
+                /*  e_dirs */
+                state = playing;
+                controllerEvent ev = irdFinished;
+                Simulator::Schedule (MicroSeconds (m_bDelay), &TcpStreamClient::Controller, this, ev);
+              }
+            else if (m_segmentCounter == m_lastSegmentIndex)
+              {
+                /*  e_df  */
+                state = playing;
+              }
+            else
+              {
+                /*  e_d  */
+                Send (m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter));
+              }
           }
-       // }
+        }
       else if (event == playbackFinished)
         {
-        /*case 2: ket thuc play 1 segment
-        -- play segment tiep theo neu ko bi underun
-        -- neu bi underun thi ko play va chuyen sang state downloading
-        */
           if (!PlaybackHandle ())
             {
-              NS_LOG_UNCOND("debug: 51" );//weafre
               /*  e_pb  */
               controllerEvent ev = playbackFinished;
               // std::cerr << "FIRST CASE. Client " << m_clientId << " " << Simulator::Now ().GetSeconds () << "\n";
               Simulator::Schedule (MicroSeconds (m_videoData.segmentDuration), &TcpStreamClient::Controller, this, ev);
-            } 
+            }
           else
             {
               /*  e_pu  */
-              NS_LOG_UNCOND("debug: 6" );//weafre
               state = downloading;
             }
         }
@@ -181,54 +153,39 @@ TcpStreamClient::Controller (controllerEvent event)
 
   else if (state == playing)
     {
-      NS_LOG_UNCOND("State: " << state);//weafre
-      /*case 1: vua delay m_bdelay ==> download segment sau khi delay va quay ve downloading playing 
-        case 2: neu vua play 1 segment va playback idx < last segment thi tiep tuc play, ko chuyen state
-        case 3: vua play segment cuoi cung thi terminal 
-        */
       if (event == irdFinished)
         {
-
-          NS_LOG_UNCOND("debug: 7" );//weafre
           /*  e_irc  */
-          m_segmentCounter++;//weafre
-          RequestRepIndex();//weafre
           state = downloadingPlaying;
           Send (m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter));
         }
-
-      else if (event == playbackFinished && m_currentPlaybackIndex < m_lastSegmentIndex )//&&m_segmentsInBuffer <15)
+      else if (event == playbackFinished && m_currentPlaybackIndex < m_lastSegmentIndex)
         {
-          NS_LOG_UNCOND("debug: 8" );//weafre
           /*  e_pb  */
           // std::cerr << "SECOND CASE. Client " << m_clientId << " " << Simulator::Now ().GetSeconds () << "\n";
           PlaybackHandle ();
-          NS_LOG_UNCOND("debug: 81" );//weafre
-          controllerEvent ev = playbackFinished ;
+          controllerEvent ev = playbackFinished;
           Simulator::Schedule (MicroSeconds (m_videoData.segmentDuration), &TcpStreamClient::Controller, this, ev);
-          NS_LOG_UNCOND("debug: 82" );//weafre
+          if(bufferOverrun)
+          {
+            //bufferOverrun=false;
+            state=downloadingPlaying;
+            m_segmentCounter++;
+            RequestRepIndex ();
+            Send (m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter));
+            //controllerEvent ev = downloadFinished;
+          }        
         }
-
       else if (event == playbackFinished && m_currentPlaybackIndex == m_lastSegmentIndex)
         {
-          NS_LOG_UNCOND("debug: 9" );//weafre
           PlaybackHandle ();
           /*  e_pf  */
           state = terminal;
           NS_LOG_UNCOND("Finished");
           StopApplication ();
         }
-      /*else 
-        {
-          NS_LOG_UNCOND("debug: 10" );//weafre
-            PlaybackHandle ();
-            controllerEvent ev = downloadFinished;
-            Simulator::Schedule (MicroSeconds (m_videoData.segmentDuration), &TcpStreamClient::Controller, this, ev);
-            state=downloadingPlaying;
-        }*/
       return;
     }
-
 }
 
 TypeId
@@ -294,6 +251,10 @@ TcpStreamClient::TcpStreamClient ()
   m_bufferUnderrunDuration = 0;
   m_currentPlaybackIndex = 0;
 
+  //buffer overun
+  bufferMax=30000000;
+  bufferOverrun=false;
+
 }
 
 void
@@ -357,11 +318,11 @@ TcpStreamClient::RequestRepIndex ()
   NS_LOG_FUNCTION (this);
   algorithmReply answer;
 
-  answer = algo->GetNextRep ( m_segmentCounter, m_clientId );//weafre get next rep index here
+  answer = algo->GetNextRep ( m_segmentCounter, m_clientId );
   m_currentRepIndex = answer.nextRepIndex;
   NS_ASSERT_MSG (answer.nextRepIndex <= m_highestRepIndex, "The algorithm returned a representation index that's higher than the maximum");
 
-  m_playbackData.playbackIndex.push_back (answer.nextRepIndex);//playing video
+  m_playbackData.playbackIndex.push_back (answer.nextRepIndex);
   m_bDelay = answer.nextDownloadDelay;
   // std::cerr << m_segmentCounter << "\n";
   LogAdaptation (answer);
@@ -371,7 +332,6 @@ template <typename T>
 void
 TcpStreamClient::Send (T & message)
 {
-  NS_LOG_UNCOND("Receiving data of segment:" << m_segmentCounter);//weafre
   NS_LOG_FUNCTION (this);
   PreparePacket (message);
   Ptr<Packet> p;
@@ -449,6 +409,7 @@ TcpStreamClient::SegmentReceivedHandle ()
       m_bufferData.bufferLevelOld.push_back (0);
     }
   m_bufferData.bufferLevelNew.push_back (m_bufferData.bufferLevelOld.back () + m_videoData.segmentDuration);
+
   m_throughput.bytesReceived.push_back (m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter));
   m_throughput.transmissionStart.push_back (m_transmissionStartReceivingSegment);
   m_throughput.transmissionRequested.push_back (m_downloadRequestSent);
@@ -464,11 +425,14 @@ TcpStreamClient::SegmentReceivedHandle ()
     {
       m_bDelay = 0;
     }
-  
-  if(m_bufferData.bufferLevelNew.back () >= long(32000000))
+  if(m_bufferData.bufferLevelNew.back () >= bufferMax)
   {
-    NS_LOG_UNCOND("Buffer infor " <<  m_bufferData.bufferLevelNew.back () );//weafre
-    m_bDelay = m_videoData.segmentDuration; //weafre limit buffer size
+    //NS_LOG_UNCOND("------- buffer: " <<  m_bufferData.bufferLevelNew.back () );//weafre
+    bufferOverrun = true;
+  }
+  else
+  {
+    bufferOverrun = false;
   }
 
   controllerEvent event = downloadFinished;
@@ -480,7 +444,6 @@ bool
 TcpStreamClient::PlaybackHandle ()
 {
   NS_LOG_FUNCTION (this);
-
   int64_t timeNow = Simulator::Now ().GetMicroSeconds ();
   // if we got called and there are no segments left in the buffer, there is a buffer underrun
   if (m_segmentsInBuffer == 0 && m_currentPlaybackIndex < m_lastSegmentIndex && !m_bufferUnderrun)
@@ -489,7 +452,6 @@ TcpStreamClient::PlaybackHandle ()
       bufferUnderrunLog << std::setfill (' ') << std::setw (26) << timeNow / (double)1000000 << " ";
       bufferUnderrunLog.flush ();
       m_bufferUnderrunDuration = timeNow;
-      NS_LOG_UNCOND("suffer underun in buffer: " << m_segmentsInBuffer);//weafre
       return true;
     }
   else if (m_segmentsInBuffer > 0)
@@ -503,14 +465,11 @@ TcpStreamClient::PlaybackHandle ()
         }
       m_playbackData.playbackStart.push_back (timeNow);
       LogPlayback ();
-      NS_LOG_UNCOND("83");//weafre
       m_segmentsInBuffer--;
-      NS_LOG_UNCOND("84");//weafre
       m_currentPlaybackIndex++;
-      NS_LOG_UNCOND("Playing video, Segment in buffer: " << m_segmentsInBuffer);//weafre
       return false;
     }
-  
+
   return true;
 }
 
@@ -650,10 +609,8 @@ void
 TcpStreamClient::LogBuffer ()
 {
   NS_LOG_FUNCTION (this);
-
- 
-  bufferLog //<< std::setfill (' ') << std::setw (13) << m_transmissionEndReceivingSegment / (double)1000000 << " "
-           // << std::setfill (' ') << std::setw (13) << m_bufferData.bufferLevelOld.back () / (double)1000000 << "\n"
+  bufferLog << std::setfill (' ') << std::setw (13) << m_transmissionEndReceivingSegment / (double)1000000 << " "
+            << std::setfill (' ') << std::setw (13) << m_bufferData.bufferLevelOld.back () / (double)1000000 << "\n"
             << std::setfill (' ') << std::setw (13) << m_transmissionEndReceivingSegment / (double)1000000 << " "
             << std::setfill (' ') << std::setw (13) << m_bufferData.bufferLevelNew.back () / (double)1000000 << "\n";
   bufferLog.flush ();

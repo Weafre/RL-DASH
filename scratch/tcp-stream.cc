@@ -86,9 +86,9 @@ main (int argc, char *argv[])
   cmd.Parse (argc, argv);
 
 
-  Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1446));
-  Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (524288));
-  Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue (524288));
+  Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1446));//max packet size
+  Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (524288));// sending buffer size
+  Config::SetDefault("ns3::TcpSocket::RcvBufSize", UintegerValue (524288));// Rcv buffer size
 
   WifiHelper wifiHelper;
   wifiHelper.SetStandard (WIFI_PHY_STANDARD_80211n_5GHZ);
@@ -148,7 +148,7 @@ main (int argc, char *argv[])
 
   /* Set up WAN link between server node and access point*/
   PointToPointHelper p2p;
-  p2p.SetDeviceAttribute ("DataRate", StringValue ("100000kb/s")); // This must not be more than the maximum throughput in 802.11n
+  p2p.SetDeviceAttribute ("DataRate", StringValue ("20kb/s")); // k bit per second weafre This must not be more than the maximum throughput in 802.11n
   p2p.SetDeviceAttribute ("Mtu", UintegerValue (1500));
   p2p.SetChannelAttribute ("Delay", StringValue ("45ms"));
   NetDeviceContainer wanIpDevices;

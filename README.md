@@ -56,9 +56,9 @@ python3 pensive.py
 - segmentDuration: uint_32, The duration of a segment in microseconds.
 - bitRate: uint_32, default datarate value
 - bwfile: string, path to bandwidth trace file for shaping bandwidth from server to accesspoint. Bandwidth will change to value specific in txt file every 1 second. The structure of the bwtrace1.txt should be: 
-12321
-34234
-23233
+12321  
+34234  
+23233  
 - adaptationAlgo: string, adaptation algorithm name, pre-installed are festive, panda, tobasco, pensive(RL)[2]
 - segmentSizeFile: The relative path (from the ns-3.x/ folder) of the file containing the sizes of the segments of the video. The segment sizes have to be provided as a (n, m) matrix, with n being the number of representation levels and m being the total number of segments. A two-segment long, three representations containing segment size file would look like the following:
 	1564 22394  
@@ -69,11 +69,11 @@ Test result
 ===========
 The measured throughput at client and the bandwidth from txt file are shown in figure below: 
  <p align="center">
-<img src="contrib/dash-meets-ns3gym/measured Throughput.png" alt="drawing" width="500"/>
+<img src="contrib/dash-meets-ns3gym/measured\ Throughput.png" alt="drawing" width="500"/>
 </p>
 
  <p align="center">
-<img src="contrib/dash-meets-ns3gym/real bandwidth trace.png" alt="drawing" width="500"/>
+<img src="contrib/dash-meets-ns3gym/real\ bandwidth\ trace.png" alt="drawing" width="500"/>
 </p>
 
 

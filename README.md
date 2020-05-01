@@ -1,6 +1,6 @@
 Introduction
 ============
-This repo implements reinforcement learning adaptation algorithms based on ns3 simulation and opengym-ai environment. I am using ns3-gym and dash meets ns3 modudle from [1] and [2]. [OpenAI Gym](https://gym.openai.com/) is a toolkit for reinforcement learning (RL) widely used in research. The network simulator [ns–3](https://www.nsnam.org/) is the de-facto standard for academic and industry studies in the areas of networking protocols and communication technologies. ns3-gym is a framework that integrates both OpenAI Gym and ns-3 in order to encourage usage of RL in networking research.
+This repo implements reinforcement learning adaptation algorithms based on ns3 simulation and opengym-ai environment. I am using ns3-gym and dash meets ns3 modudle from [1] and [2].  
 
 Added features
 ============
@@ -10,10 +10,10 @@ Added features
 
 Installation
 ============
-1. Follow instruction in [1] to install ns3-gym
+1. After cloning this repo, follow instruction in [1] to install pre-required packages.
 ```
 #run after installation
-cd ns3-gym
+cd RL-DASH
 ```
 2. Run rl-tcp test to make sure the installation success.
 ```
@@ -55,7 +55,7 @@ python3 pensive.py
 - numberOfClients: int, number of clients
 - segmentDuration: uint_32, The duration of a segment in microseconds.
 - bitRate: uint_32, default datarate value
-- bwfile: string, path to bandwidth trace file for shaping bandwidth from server to accesspoint. Bandwidth will change to value specific in txt file every 1 second. The structure of the bwtrace1.txt should be: 
+- bwfile: string, path to bandwidth trace file for shaping bandwidth from server to accesspoint. Bandwidth will change to value specific in txt file every 1 second. The structure of the bwtrace1.txt should be:  
 12321  
 34234  
 23233  
@@ -69,11 +69,11 @@ Test result
 ===========
 The measured throughput at client and the bandwidth from txt file are shown in figure below: 
  <p align="center">
-<img src="contrib/dash-meets-ns3gym/measured\ Throughput.png" alt="drawing" width="500"/>
+<img src="contrib/dash-meets-ns3gym/measuredThroughput.png" alt="drawing" width="500"/>
 </p>
 
  <p align="center">
-<img src="contrib/dash-meets-ns3gym/real\ bandwidth\ trace.png" alt="drawing" width="500"/>
+<img src="contrib/dash-meets-ns3gym/realbandwidthtrace.png" alt="drawing" width="500"/>
 </p>
 
 

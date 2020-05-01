@@ -38,7 +38,10 @@
 #include "ns3/tcp-stream-helper.h"
 #include "ns3/tcp-stream-interface.h"
 
-
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
 
 
 template <typename T>
@@ -50,8 +53,24 @@ std::string ToString(T val)
 }
 
 using namespace ns3;
-
+std::vector<uint32_t> bw;
+int cnt=0;
 NS_LOG_COMPONENT_DEFINE ("TcpStreamExample");
+void BandwidthTrace1()
+{ cnt++;
+  Config::Set("/NodeList/1/DeviceList/0/$ns3::PointToPointNetDevice/DataRate", StringValue(ToString(bw[cnt])+"bps") );
+
+}
+
+void BandwidthTrace()
+{ 
+  cnt++;
+  Config::Set("/NodeList/1/DeviceList/0/$ns3::PointToPointNetDevice/DataRate", StringValue(ToString(bw[cnt])+"bps") );
+  Simulator::Schedule (Seconds(2.0) , &BandwidthTrace);
+  Simulator::Schedule (Seconds(1.0) , &BandwidthTrace1);
+
+
+}
 
 int
 main (int argc, char *argv[])
@@ -60,22 +79,26 @@ main (int argc, char *argv[])
 // Users may find it convenient to turn on explicit debugging
 // for selected modules; the below lines suggest how to do this
 //
-// #if 1
-//   LogComponentEnable ("TcpStreamExample", LOG_LEVEL_INFO);
-//   LogComponentEnable ("TcpStreamClientApplication", LOG_LEVEL_INFO);
-//   LogComponentEnable ("TcpStreamServerApplication", LOG_LEVEL_INFO);
-// #endif
+ if (1) {
+   LogComponentEnable ("TcpStreamExample", LOG_LEVEL_INFO);
+   LogComponentEnable ("TcpStreamClientApplication", LOG_LEVEL_INFO);
+   LogComponentEnable ("TcpStreamServerApplication", LOG_LEVEL_INFO);
+ }
+ 
 
   uint64_t segmentDuration;
+  uint64_t bufferMax;
   // The simulation id is used to distinguish log file results from potentially multiple consequent simulation runs.
-  uint32_t simulationId;
+  std::string simulationId;
   uint32_t numberOfClients;
   std::string adaptationAlgo;
   std::string segmentSizeFilePath;
+  std::string bwFile;
   uint32_t bitRate;
   bool shortGuardInterval = true;
 
   CommandLine cmd;
+ 
   cmd.Usage ("Simulation of streaming with DASH.\n");
   cmd.AddValue ("simulationId", "The simulation's index (for logging purposes)", simulationId);
   cmd.AddValue ("numberOfClients", "The number of clients", numberOfClients);
@@ -83,8 +106,16 @@ main (int argc, char *argv[])
   cmd.AddValue ("adaptationAlgo", "The adaptation algorithm that the client uses for the simulation", adaptationAlgo);
   cmd.AddValue ("segmentSizeFile", "The relative path (from ns-3.x directory) to the file containing the segment sizes in bytes", segmentSizeFilePath);
   cmd.AddValue ("bitRate", "Traffic speed from server", bitRate);
+  cmd.AddValue ("maxBuffer", "The simulation's index (for logging purposes)", bufferMax);
+  cmd.AddValue ("bwfile", "File containing real bandwidth trace", bwFile);
   cmd.Parse (argc, argv);
 
+  std::ifstream myfile ;//(bwFile, ios::in);
+  myfile.open(bwFile);
+  uint32_t tmp;  
+  while(myfile>>tmp){
+             bw.push_back(tmp);
+    }
 
   Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1446));
   //Config::SetDefault("ns3::TcpSocket::SndBufSize", UintegerValue (524288));
@@ -154,6 +185,7 @@ main (int argc, char *argv[])
   p2p.SetChannelAttribute ("Delay", StringValue ("45ms"));
   NetDeviceContainer wanIpDevices;
   wanIpDevices = p2p.Install (serverNode, apNode);
+  Simulator::Schedule (Seconds(2.0) , &BandwidthTrace);
 
   /* create MAC layers */
   WifiMacHelper wifiMac;
@@ -235,7 +267,7 @@ main (int argc, char *argv[])
 
 
   Ptr<RandomRoomPositionAllocator> randPosAlloc = CreateObject<RandomRoomPositionAllocator> ();
-  randPosAlloc->AssignStreams (simulationId);
+  randPosAlloc->AssignStreams (bufferMax);
 
   // create folder so we can log the positions of the clients
   const char * mylogsDir = dashLogDirectory.c_str();
@@ -243,12 +275,12 @@ main (int argc, char *argv[])
   std::string algodirstr (dashLogDirectory +  adaptationAlgo );  
   const char * algodir = algodirstr.c_str();
   mkdir (algodir, 0775);
-  std::string dirstr (dashLogDirectory + adaptationAlgo + "/" + ToString (numberOfClients) + "/");
+  std::string dirstr (dashLogDirectory + adaptationAlgo + "/" + ToString (numberOfClients) + "/"+simulationId+"/");
   const char * dir = dirstr.c_str();
   mkdir(dir, 0775);
 
   std::ofstream clientPosLog;
-  std::string clientPos = dashLogDirectory +  adaptationAlgo + "/" + ToString (numberOfClients) + "/" + "sim" + ToString (simulationId) + "_"  + "clientPos.txt";
+  std::string clientPos = dashLogDirectory + "/" + adaptationAlgo + "/" + ToString (numberOfClients) + "/"+simulationId+"/" +  "clientPos.txt";
   //std::string dLog = dashLogDirectory + m_algoName + "/" +  numberOfClients  + "/sim" + simulationId + "_" + "cl" + clientId + "_"  + "downloadLog.txt";
 
   clientPosLog.open (clientPos.c_str());
@@ -291,7 +323,8 @@ main (int argc, char *argv[])
   clientHelper.SetAttribute ("SegmentDuration", UintegerValue (segmentDuration));
   clientHelper.SetAttribute ("SegmentSizeFilePath", StringValue (segmentSizeFilePath));
   clientHelper.SetAttribute ("NumberOfClients", UintegerValue(numberOfClients));
-  clientHelper.SetAttribute ("SimulationId", UintegerValue (simulationId));
+  clientHelper.SetAttribute ("SimulationId", StringValue (simulationId));
+  clientHelper.SetAttribute ("maxBuffer", UintegerValue (bufferMax));//weafre
   ApplicationContainer clientApps = clientHelper.Install (clients);
   for (uint i = 0; i < clientApps.GetN (); i++)
     {
@@ -301,7 +334,7 @@ main (int argc, char *argv[])
 
 
   NS_LOG_INFO ("Run Simulation.");
-  NS_LOG_INFO ("Sim: " << simulationId << "Clients: " << numberOfClients);
+  NS_LOG_INFO ("Sim: " << simulationId << "\nClients: " << numberOfClients);
   Simulator::Run ();
   Simulator::Destroy ();
   NS_LOG_INFO ("Done.");

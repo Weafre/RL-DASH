@@ -263,7 +263,7 @@ TcpStreamClient::TcpStreamClient ()
   m_currentPlaybackIndex = 0;
 
   //buffer overun
-  m_bufferMax=30000000;
+  m_bufferMax=48000000;
   m_bufferOverrun=false;
 
 }

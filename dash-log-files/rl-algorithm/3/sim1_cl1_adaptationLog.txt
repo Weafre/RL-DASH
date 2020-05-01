@@ -1,2 +1,0 @@
-Segment_Index Rep_Level Decision_Point_Of_Time Case DelayCase
-            0         0                2.13243    0         0

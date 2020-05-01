@@ -1,2 +1,0 @@
-Segment_Index Download_Request_Sent Download_Start Download_End Segment_Size averageBitrate Download_OK
-            0               2.13243        2.22383      2.51517         3128       176392           1

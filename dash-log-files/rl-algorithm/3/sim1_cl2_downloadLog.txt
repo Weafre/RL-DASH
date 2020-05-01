@@ -1,1 +1,0 @@
-Segment_Index Download_Request_Sent Download_Start Download_End Segment_Size averageBitrate Download_OK

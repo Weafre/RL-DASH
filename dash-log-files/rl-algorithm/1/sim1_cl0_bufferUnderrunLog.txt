@@ -1,2 +1,0 @@
-Buffer_Underrun_Started_At         Until 
-                   58.4869 

@@ -69,11 +69,11 @@ Test result
 ===========
 The measured throughput at client and the bandwidth from txt file are shown in figure below: 
  <p align="center">
-<img src="contrib/dash-meets-ns3gym/measuredThroughput.png" alt="drawing" width="500"/>
+<img src="contrib/measuredThroughput.png" alt="drawing" width="500"/>
 </p>
 
  <p align="center">
-<img src="contrib/dash-meets-ns3gym/realbandwidthtrace.png" alt="drawing" width="500"/>
+<img src="contrib/realbandwidthtrace.png" alt="drawing" width="500"/>
 </p>
 
 

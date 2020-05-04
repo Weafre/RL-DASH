@@ -66,6 +66,7 @@ TcpStreamClient::Controller (controllerEvent event)
   NS_LOG_FUNCTION (this);
   if (state == initial)
     {
+      //NS_LOG_INFO (state);
       RequestRepIndex ();
       state = downloading;
       Send (m_videoData.segmentSize.at (m_currentRepIndex).at (m_segmentCounter));
@@ -74,6 +75,7 @@ TcpStreamClient::Controller (controllerEvent event)
 
   if (state == downloading)
     {
+      //NS_LOG_INFO (state);
       PlaybackHandle ();
       if (m_currentPlaybackIndex <= m_lastSegmentIndex)
         {

@@ -63,9 +63,10 @@ void BandwidthTrace1()
 }
 
 void BandwidthTrace()
-{ 
+{ //NS_LOG_INFO ("state");
   cnt++;
   Config::Set("/NodeList/1/DeviceList/0/$ns3::PointToPointNetDevice/DataRate", StringValue(ToString(bw[cnt])+"bps") );
+  //NS_LOG_INFO ("state");
   Simulator::Schedule (Seconds(2.0) , &BandwidthTrace);
   Simulator::Schedule (Seconds(1.0) , &BandwidthTrace1);
 
@@ -115,6 +116,7 @@ main (int argc, char *argv[])
   uint32_t tmp;  
   while(myfile>>tmp){
              bw.push_back(tmp);
+             //NS_LOG_INFO (tmp);
     }
 
   Config::SetDefault("ns3::TcpSocket::SegmentSize", UintegerValue (1446));
@@ -185,7 +187,7 @@ main (int argc, char *argv[])
   p2p.SetChannelAttribute ("Delay", StringValue ("45ms"));
   NetDeviceContainer wanIpDevices;
   wanIpDevices = p2p.Install (serverNode, apNode);
-  Simulator::Schedule (Seconds(2.0) , &BandwidthTrace);
+  Simulator::Schedule (Seconds(1.0) , &BandwidthTrace);
 
   /* create MAC layers */
   WifiMacHelper wifiMac;

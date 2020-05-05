@@ -290,7 +290,7 @@ def get_args():
     return parser.parse_args()
 
 
-
+#python3 simple-nn.py --episodes=2 --saveModel=test-simplenn 
 if __name__ == "__main__":
     try:
         args = get_args()

@@ -21,7 +21,7 @@ __copyright__ = "Copyright (c) 2018, Technische Universität Berlin"
 __version__ = "0.1.0"
 __email__ = "gawlowicz@tkn.tu-berlin.de"
 
-
+#creating socket connecting to ns3 simulator
 class Ns3ZmqBridge(object):
     """docstring for Ns3ZmqBridge"""
     def __init__(self, port=0, startSim=True, simSeed=0, simArgs={}, debug=False):
@@ -424,7 +424,7 @@ class Ns3Env(gym.Env):
     def render(self, mode='human'):
         return
 
-    def get_random_action(self):
+    def get_random_action (self):
         act = self.action_space.sample()
         return act
 

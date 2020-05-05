@@ -6,6 +6,7 @@ Added features
 ============
 - Limit buffer size to maxBuffer,normaly the client will have a limited buffer size. But the original implementation in [1] allows clients to have unlimited buffer during playback which make client's behaviors unrealistic.
 - Bandwidth fluctuation. Adaptive bitrate algorithms are design to cope with varying throughput therefore in the simulation, the throughput between client and server should be varied over time. 
+- Q-learning adaptation algorithm: a new RL-based adaptation algorithm is added. The action value function after learning are saved to local file for later use.
 
 
 Installation
@@ -28,7 +29,7 @@ cd ./scratch/rl-tcp/
 ```
 git clone https://github.com/peterbangert/dash-meets-ns3gym
 ```
-4. Building:
+4. Build:
 ```
 #run under ns3-gym folder
 ./waf configure
@@ -48,6 +49,15 @@ Examples
 #2nd terminal:
 cd ns3-gym/contrib/dash-meets-ns3gym/ns3gym/pensive
 python3 pensive.py
+```
+3. Training RL algorithms: 
+```
+#1st terminal
+./start-clients.sh 
+#can change the argument in the start-clients.sh file
+#2nd terminal
+cd ns3-gym/contrib/dash-meets-ns3gym/ns3gym/
+python3 paris.py
 ```
 #### Parameters 
 - simulationId : string, simulation id (for logging purpose)

@@ -204,6 +204,7 @@ OpenGymInterface::Init()
   bool stopSim = simInitAck.stopsimreq();
   if (stopSim) {
     NS_LOG_DEBUG("---Stop requested: " << stopSim);
+    NS_LOG_UNCOND("stopped");
     m_stopEnvRequested = true;
     Simulator::Stop();
     Simulator::Destroy ();
@@ -274,7 +275,9 @@ OpenGymInterface::NotifyCurrentState()
   bool stopSim = envActMsg.stopsimreq();
   if (stopSim) {
     NS_LOG_DEBUG("---Stop requested: " << stopSim);
+    //NS_LOG_UNCOND("Stopped 2");
     m_stopEnvRequested = true;
+    //Simulator::Run();
     Simulator::Stop();
     Simulator::Destroy ();
     std::exit(0);

@@ -23,7 +23,8 @@ import sys
 
 from collections import defaultdict
 import pickle
-
+import os
+from functools import partial
 
 S_INFO = 6  # bit_rate, buffer_size, rebuffering_time, bandwidth_measurement, chunk_til_video_end
 S_LEN = 8  # take how many frames in the past
@@ -31,7 +32,7 @@ A_DIM = 6
 VIDEO_BIT_RATE = [300,750,1200,1850,2850,4300]  # Kbps
 BITRATE_REWARD = [1, 2, 3, 12, 15, 20]
 BITRATE_REWARD_MAP = {0: 0, 300: 1, 750: 2, 1200: 3, 1850: 12, 2850: 15, 4300: 20}
-M_IN_K = 1000.0
+M_IN_K = 1000000.0
 BUFFER_NORM_FACTOR = 10.0
 CHUNK_TIL_VIDEO_END_CAP = 221.0
 TOTAL_VIDEO_CHUNKS = 220#weafre
@@ -84,24 +85,11 @@ def env_init():
 
     return env
 
+def init_action():
+  return np.zeros(7)
+
 def main():
-
-    # space->Add("buffer", buffer); current buffer
-    # space->Add("lastRequest", lastRequest); index of last request
-    # space->Add("lastQuality", lastQuality);quality level 
-    # space->Add("lastChunkFinishTime", lastChunkFinishTime); download finished time
-    # space->Add("lastChunkStartTime", lastChunkStartTime);  request time
-    # space->Add("RebufferTime", RebufferTime); // duration buffer =0 until current time
-    # space->Add("lastChunkSize", lastChunkSize);// segment size
- 
-    ep_cumulative_reward = 0
-    ep_start_time = time.time()
-    ep_cumulative_rebuffer = 0 
-
     env = env_init()
-    stepIdx = 0
-    actionHistory = []  
-    throughputHistory = []
     ob_space = env.observation_space
     ac_space = env.action_space
     print("INFO---------------------")
@@ -115,78 +103,85 @@ def main():
         os.makedirs(SUMMARY_DIR)
 
     #starting coding
-    discount_factor=1.0
-    alpha=0.5
-    epsilon=0.1
-    #Q = defaultdict(lambda: np.zeros(env.action_space.n))
+    #Load saved action value      
     try: 
         dic = open("./results/Q-function.pkl","rb")
         Q=pickle.load(dic)
+        print("Loaded action value function")
     except:
-        Q = defaultdict(lambda: np.zeros(env.action_space.n))
+        Q = defaultdict(partial(init_action))
+    #init a policy
     policy = make_epsilon_greedy_policy(Q, epsilon, env.action_space.n)
+    #init parameter
+    discount_factor=1.0
+    alpha=0.5
+    epsilon=0.1
+    #for learning purpose
+    episodes=10
+    epIdx=0
+    ep_reward_statistic=[]
+    while(epIdx<episodes):
+        ep_cumulative_reward = 0
+        ep_start_time = time.time()
+        ep_cumulative_rebuffer = 0 
+        stepIdx = 0
+        actionHistory = []  
+        throughputHistory = []
+        epIdx+=1
+        #print('reset 1st time',epIdx)
+        obs = env.reset()
+        print("---Initial observation:", obs)
+        print("\n")
+        while True:
+            stepIdx += 1
+            #get state
+            state=get_state_array(obs)
+            #take an action
+            action_probs = policy(state)
+            action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
+            if ( obs['lastRequest'] == TOTAL_VIDEO_CHUNKS ):
+                stepIdx = 0
+                if epIdx + 1 < episodes:
+                    env.reset()
+                break
+            if ( stepIdx==50):
+                stepIdx = 0
+                if epIdx + 1 < episodes:
+                    env.reset()
+                break
+            actionHistory.append(action)
+            obs, reward, done, info = env.step(action)
+            reward=get_reward(obs)
+            ep_cumulative_reward+=reward
+            next_state=get_state_array(obs)
 
-    obs = env.reset()
-    print("---Initial observation:", obs)
-    print("\n")
-    obs["lastChunkFinishTime"] = float(obs["lastChunkFinishTime"]) / 1000000
-    obs["lastChunkStartTime"] = float(obs["lastChunkStartTime"]) / 1000000
-    obs["buffer"] = float(obs["buffer"]) / 1000000
-    obs["lastChunkSize"] = float(obs["lastChunkSize"])*8 / 1000#to kB
-    obs["RebufferTime"] = float(obs["RebufferTime"]) / 1000000
-    episodes=2
-    #for i in range (episodes):
-        #env = env_init()
-    while True:
-        stepIdx += 1
-        #print("INFO: Segment Idx: ",stepIdx,'\n')
-        #print(obs)
-        curr_buffer=obs["buffer"]
-        last_thrp=obs["lastChunkSize"]/(obs["lastChunkFinishTime"]-obs["lastChunkStartTime"] +epsilon)#kilo bytes per second
+            #update Q value 
+            best_next_action = np.argmax(Q[next_state])    
+            td_target = reward + discount_factor * Q[next_state][best_next_action]
+            td_delta = td_target - Q[state][action]
+            Q[state][action] += alpha * td_delta
+            if(stepIdx%10==0):
+                print("INFO: SG",stepIdx , 'Reward: %.4f'%reward )
+        ep_reward_statistic.append(ep_cumulative_reward)
+        print("Cumulative reward : " , ep_cumulative_reward , " Time : " , time.time() - ep_start_time , " Cumulative rebuffer : " , ep_cumulative_rebuffer)
+        #save state-action value function to file
+        #print(actionHistory)
+        if(epIdx%5==0):
+            fig = plt.figure()
+            plt.plot(actionHistory)
+            plt.ylabel('Rep Index')
+            plt.savefig('./results/repValue_episode'+str(epIdx)+'.png')
+            plt.close(fig)
 
-        curr_buffer =quantization(50,curr_buffer,10)
-        last_thrp =quantization(1000,last_thrp,100) 
-        state=(curr_buffer,last_thrp)
-        #find action
-        action_probs = policy(state)
-        action = np.random.choice(np.arange(len(action_probs)), p=action_probs)
-        if ( obs['lastRequest'] == TOTAL_VIDEO_CHUNKS ):
-            break
-        if ( stepIdx==50):
-            break
-        actionHistory.append(action)
-        obs, reward, done, info = env.step(action)
-        ep_cumulative_reward+=reward
+    fig1 = plt.figure()
+    plt.plot(ep_reward_statistic)
+    plt.ylabel('Rewards over episode')
+    plt.savefig('./results/reward_over'+str(episodes)+'episodes.png')
+    plt.close(fig1)
+    f = open("./results/Q-function.pkl","wb")
+    pickle.dump(Q,f)
+    print('Saved action value function to file')
 
-        obs["lastChunkFinishTime"] = float(obs["lastChunkFinishTime"]) / 1000000
-        obs["lastChunkStartTime"] = float(obs["lastChunkStartTime"]) / 1000000
-        obs["buffer"] = float(obs["buffer"]) / 1000000
-        obs["lastChunkSize"] = float(obs["lastChunkSize"]) * 8/ 1000#kB
-        obs["RebufferTime"] = float(obs["RebufferTime"]) / 1000000
-        next_buffer=obs["buffer"]
-        next_thrp=obs["lastChunkSize"]/(obs["lastChunkFinishTime"]-obs["lastChunkStartTime"]+epsilon)
-
-        next_buffer =quantization(50,next_buffer,10)
-        next_thrp =quantization(1000,next_thrp,100) 
-        next_state=(next_buffer,next_thrp)
-
-        #update Q value 
-        best_next_action = np.argmax(Q[next_state])    
-        td_target = reward + discount_factor * Q[next_state][best_next_action]
-        td_delta = td_target - Q[state][action]
-        Q[state][action] += alpha * td_delta
-
-        print("INFO: Segment Idx:",stepIdx ,'\nBuffer: ',obs['buffer']," RebufferTime: ",obs['RebufferTime'], 'Reward: %.4f'%reward )
-
-    print("Cumulative reward : " , ep_cumulative_reward , " Time : " , time.time() - ep_start_time , " Cumulative rebuffer : " , ep_cumulative_rebuffer)
-    #save state-action value function to file
-    #f = open("./results/Q-function.pkl","wb")
-    #pickle.dump(Q,f)
-
-    print(actionHistory)
-    plt.plot(actionHistory)
-    plt.ylabel('Rep Index')
-    plt.show()
     env.close()
 
 def quantization(max_value,value, step):
@@ -196,20 +191,7 @@ def quantization(max_value,value, step):
   return index
 
 def make_epsilon_greedy_policy(Q, epsilon, nA):
-    """
-    Creates an epsilon-greedy policy based on a given Q-function and epsilon.
-    
-    Args:
-        Q: A dictionary that maps from state -> action-values.
-            Each value is a numpy array of length nA (see below)
-        epsilon: The probability to select a random action. Float between 0 and 1.
-        nA: Number of actions in the environment.
-    
-    Returns:
-        A function that takes the observation as an argument and returns
-        the probabilities for each action in the form of a numpy array of length nA.
-    
-    """
+
     def policy_fn(observation):
         A = np.ones(nA, dtype=float) * epsilon / nA
         best_action = np.argmax(Q[observation])
@@ -217,9 +199,29 @@ def make_epsilon_greedy_policy(Q, epsilon, nA):
         return A
     return policy_fn
 
+def get_state_array(obs):
+
+    download_time = (float(obs['lastChunkFinishTime']) - float(obs['lastChunkStartTime'])) / M_IN_K
+    size = float(obs['lastChunkSize']) *8000/ M_IN_K
+    throughput = size / download_time
+    buff = obs['buffer'] / M_IN_K
+    left_chunks =  TOTAL_VIDEO_CHUNKS - obs['lastRequest']
+    #buffer_delta = 
+    rebuffer_time = obs['RebufferTime'] / M_IN_K
+
+    buff =quantization(50,buff,10)
+    throughput =quantization(1000,throughput,100) 
+    next_state = (throughput,buff)#np.asarray([throughput,buff])
+    #next_state = np.reshape(next_state, [1, 2])
+
+    #next_state = np.asarray([download_time, size, throughput, buff, left_chunks, rebuffer_time])
+    #next_state = np.reshape(next_state, [1, 6])
     
+    return next_state    
 
-
+def get_reward(obs):
+    reward = obs['buffer']/M_IN_K /5+ obs['lastquality'] - 5 * ((obs['RebufferTime'] ) > 0)
+    return reward
 def get_args():
     parser = argparse.ArgumentParser(description='Arguments for Neural Network')
     parser.add_argument('--animate', type=str, default=None,

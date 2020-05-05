@@ -204,13 +204,13 @@ float
 MyGymEnv::GetReward()
 {
   NS_LOG_FUNCTION (this);
-  // if (m_bufferNow > m_bufferLast) {
-  //   m_reward = m_reward +  1;
-  // } else {
-  //   m_reward = 0;
-  // }
+  if (m_bufferNow > m_bufferLast) {
+    m_reward = m_reward +  1;
+  } else {
+    m_reward = 0;
+  }
   //NS_LOG_UNCOND(m_bufferNow << m_new_rep_index);
-  m_reward=m_bufferNow/2000000 + m_new_rep_index;
+  //m_reward=m_bufferNow/2000000 + m_new_rep_index;
   return m_reward;
 }
 

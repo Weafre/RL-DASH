@@ -53,18 +53,34 @@ std::string ToString(T val)
 }
 
 using namespace ns3;
-std::vector<uint32_t> bw;
+std::vector<int> bw;
 int cnt=0;
 NS_LOG_COMPONENT_DEFINE ("TcpStreamExample");
 void BandwidthTrace1()
-{ cnt++;
+{   if(cnt<(int)(bw.size()-1))
+  {
+    cnt++;
+  }
+  else
+  {
+    cnt=cnt;
+  }
   Config::Set("/NodeList/1/DeviceList/0/$ns3::PointToPointNetDevice/DataRate", StringValue(ToString(bw[cnt])+"bps") );
 
 }
 
 void BandwidthTrace()
 { //NS_LOG_INFO ("state");
-  cnt++;
+  if(cnt<(int)(bw.size()-1))
+  {
+    cnt++;
+  }
+  else
+  {
+    cnt=cnt;
+  }
+
+
   Config::Set("/NodeList/1/DeviceList/0/$ns3::PointToPointNetDevice/DataRate", StringValue(ToString(bw[cnt])+"bps") );
   //NS_LOG_INFO ("state");
   Simulator::Schedule (Seconds(2.0) , &BandwidthTrace);
@@ -113,7 +129,7 @@ main (int argc, char *argv[])
 
   std::ifstream myfile ;//(bwFile, ios::in);
   myfile.open(bwFile);
-  uint32_t tmp;  
+  int tmp;  
   while(myfile>>tmp){
              bw.push_back(tmp);
              //NS_LOG_INFO (tmp);

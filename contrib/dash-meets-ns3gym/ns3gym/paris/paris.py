@@ -88,7 +88,7 @@ def env_init():
 def init_action():
   return np.zeros(7)
 
-def main():
+def main(args):
     env = env_init()
     ob_space = env.observation_space
     ac_space = env.action_space
@@ -111,16 +111,18 @@ def main():
     except:
         Q = defaultdict(partial(init_action))
     #init a policy
-    policy = make_epsilon_greedy_policy(Q, epsilon, env.action_space.n)
     #init parameter
     discount_factor=1.0
     alpha=0.5
     epsilon=0.1
+    policy = make_epsilon_greedy_policy(Q, epsilon, env.action_space.n)
+    
     #for learning purpose
-    episodes=10
+    episodes=args.episodes
     epIdx=0
     ep_reward_statistic=[]
     while(epIdx<episodes):
+        print("[INFO] Episodes: ", epIdx)
         ep_cumulative_reward = 0
         ep_start_time = time.time()
         ep_cumulative_rebuffer = 0 
@@ -130,10 +132,15 @@ def main():
         epIdx+=1
         #print('reset 1st time',epIdx)
         obs = env.reset()
-        print("---Initial observation:", obs)
-        print("\n")
+        #print("---Initial observation:", obs)
+        #print("\n")
+        reward=0
+
         while True:
+
             stepIdx += 1
+            if(stepIdx%20==0):
+                print("     [INFO] SG",stepIdx , 'Reward: %.4f'%reward )
             #get state
             state=get_state_array(obs)
             #take an action
@@ -144,11 +151,11 @@ def main():
                 if epIdx + 1 < episodes:
                     env.reset()
                 break
-            if ( stepIdx==50):
-                stepIdx = 0
-                if epIdx + 1 < episodes:
-                    env.reset()
-                break
+            #if ( stepIdx==50):
+             #   stepIdx = 0
+              #  if epIdx + 1 < episodes:
+               #     env.reset()
+                #break
             actionHistory.append(action)
             obs, reward, done, info = env.step(action)
             reward=get_reward(obs)
@@ -160,23 +167,25 @@ def main():
             td_target = reward + discount_factor * Q[next_state][best_next_action]
             td_delta = td_target - Q[state][action]
             Q[state][action] += alpha * td_delta
-            if(stepIdx%10==0):
-                print("INFO: SG",stepIdx , 'Reward: %.4f'%reward )
+
         ep_reward_statistic.append(ep_cumulative_reward)
         print("Cumulative reward : " , ep_cumulative_reward , " Time : " , time.time() - ep_start_time , " Cumulative rebuffer : " , ep_cumulative_rebuffer)
         #save state-action value function to file
         #print(actionHistory)
-        if(epIdx%5==0):
+        if(epIdx%1==0):
             fig = plt.figure()
             plt.plot(actionHistory)
             plt.ylabel('Rep Index')
-            plt.savefig('./results/repValue_episode'+str(epIdx)+'.png')
+            plt.savefig('./results/repValue_episode'+str(epIdx+10)+'.png')
             plt.close(fig)
+        f = open("./results/Q-function.pkl","wb")
+        pickle.dump(Q,f)
+        print('Saved action value function to file')
 
     fig1 = plt.figure()
     plt.plot(ep_reward_statistic)
     plt.ylabel('Rewards over episode')
-    plt.savefig('./results/reward_over'+str(episodes)+'episodes.png')
+    plt.savefig('./results/reward_over'+str(episodes+10)+'episodes.png')
     plt.close(fig1)
     f = open("./results/Q-function.pkl","wb")
     pickle.dump(Q,f)
@@ -202,7 +211,7 @@ def make_epsilon_greedy_policy(Q, epsilon, nA):
 def get_state_array(obs):
 
     download_time = (float(obs['lastChunkFinishTime']) - float(obs['lastChunkStartTime'])) / M_IN_K
-    size = float(obs['lastChunkSize']) *8000/ M_IN_K
+    size = float(obs['lastChunkSize']) *8000/ M_IN_K#in kbyte
     throughput = size / download_time
     buff = obs['buffer'] / M_IN_K
     left_chunks =  TOTAL_VIDEO_CHUNKS - obs['lastRequest']
@@ -210,7 +219,7 @@ def get_state_array(obs):
     rebuffer_time = obs['RebufferTime'] / M_IN_K
 
     buff =quantization(50,buff,10)
-    throughput =quantization(1000,throughput,100) 
+    throughput =quantization(1500,throughput,100) 
     next_state = (throughput,buff)#np.asarray([throughput,buff])
     #next_state = np.reshape(next_state, [1, 2])
 
@@ -220,12 +229,14 @@ def get_state_array(obs):
     return next_state    
 
 def get_reward(obs):
-    reward = obs['buffer']/M_IN_K /5+ obs['lastquality'] - 5 * ((obs['RebufferTime'] ) > 0)
+    reward = obs['buffer']/M_IN_K /5+ obs['lastquality'] - 10 * ((obs['RebufferTime'] ) > 0)
     return reward
 def get_args():
     parser = argparse.ArgumentParser(description='Arguments for Neural Network')
     parser.add_argument('--animate', type=str, default=None,
                        help='Create mp4 animation of result, give filename, default none')
+    parser.add_argument('--episodes', type=int, default=10,
+                       help='Number of episodes for training')
     return parser.parse_args()
 
 def create_animation(args):
@@ -237,7 +248,7 @@ def create_animation(args):
 if __name__ == "__main__":
     try:
         args = get_args()
-        main()
+        main(args)
         if args.animate:
             create_animation(args)
     except (KeyboardInterrupt, SystemExit):

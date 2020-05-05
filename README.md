@@ -86,6 +86,17 @@ The measured throughput at client and the bandwidth from txt file are shown in f
 <img src="contrib/realbandwidthtrace.png" alt="drawing" width="500"/>
 </p>
 please keep in mind that the bandwidth will change every 1 second and throughput is measured every time a segment is successfully downloaded. Therefore the values of measured throughput and value in the txt file are not identical but the shape looks similar. We need to take in to account also the ns3 simulator only set the bandwidth from server to access point, client will never perceive the exact bandwidth.
+ <p align="center">
+<img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/repValue_episode1.png" alt="drawing" width="500"/>
+</p>
+ <p align="center">
+<img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/repValue_episode50.png" alt="drawing" width="500"/>
+</p>
+The images above show the selected representation index for each segment for testing video at episode 1 and episode 50.
+This is the reward over 50 episodes.
+ <p align="center">
+<img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/reward_over50episodes.png" alt="drawing" width="500"/>
+</p>
 
 REFERENCES
 ============

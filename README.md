@@ -87,6 +87,7 @@ The measured throughput at client and the bandwidth from txt file are shown in f
 </p>
 please keep in mind that the bandwidth will change every 1 second and throughput is measured every time a segment is successfully downloaded. Therefore the values of measured throughput and value in the txt file are not identical but the shape looks similar. We need to take in to account also the ns3 simulator only set the bandwidth from server to access point, client will never perceive the exact bandwidth.
 State definition and reward function:
+
 ```
 #STATE
 buff =quantization(50,buff,10)

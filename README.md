@@ -86,6 +86,15 @@ The measured throughput at client and the bandwidth from txt file are shown in f
 <img src="contrib/realbandwidthtrace.png" alt="drawing" width="500"/>
 </p>
 please keep in mind that the bandwidth will change every 1 second and throughput is measured every time a segment is successfully downloaded. Therefore the values of measured throughput and value in the txt file are not identical but the shape looks similar. We need to take in to account also the ns3 simulator only set the bandwidth from server to access point, client will never perceive the exact bandwidth.
+State definition and reward function:
+```
+#STATE
+buff =quantization(50,buff,10)
+throughput =quantization(1500,throughput,100) 
+next_state = (throughput,buff)
+#REWARD
+reward = obs['buffer']/M_IN_K /5+ obs['lastquality'] - 10 * ((obs['RebufferTime'] ) > 0)
+```
  <p align="center">
 <img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/repValue_episode1.png" alt="drawing" width="500"/>
 </p>

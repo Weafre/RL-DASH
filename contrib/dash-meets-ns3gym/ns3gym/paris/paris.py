@@ -139,7 +139,7 @@ def main(args):
         while True:
 
             stepIdx += 1
-            if(stepIdx%20==0):
+            if(stepIdx%50==0):
                 print("     [INFO] SG",stepIdx , 'Reward: %.4f'%reward )
             #get state
             state=get_state_array(obs)
@@ -172,11 +172,11 @@ def main(args):
         print("Cumulative reward : " , ep_cumulative_reward , " Time : " , time.time() - ep_start_time , " Cumulative rebuffer : " , ep_cumulative_rebuffer)
         #save state-action value function to file
         #print(actionHistory)
-        if(epIdx%1==0):
+        if(epIdx%5==0):
             fig = plt.figure()
             plt.plot(actionHistory)
             plt.ylabel('Rep Index')
-            plt.savefig('./results/repValue_episode'+str(epIdx+10)+'.png')
+            plt.savefig('./results/repValue_episode'+str(epIdx+50)+'.png')
             plt.close(fig)
         f = open("./results/Q-function.pkl","wb")
         pickle.dump(Q,f)
@@ -185,7 +185,7 @@ def main(args):
     fig1 = plt.figure()
     plt.plot(ep_reward_statistic)
     plt.ylabel('Rewards over episode')
-    plt.savefig('./results/reward_over'+str(episodes+10)+'episodes.png')
+    plt.savefig('./results/reward_over'+str(episodes+50)+'episodes.png')
     plt.close(fig1)
     f = open("./results/Q-function.pkl","wb")
     pickle.dump(Q,f)

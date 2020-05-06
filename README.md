@@ -90,9 +90,9 @@ please keep in mind that the bandwidth will change every 1 second and throughput
 <img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/repValue_episode1.png" alt="drawing" width="500"/>
 </p>
  <p align="center">
-<img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/repValue_episode50.png" alt="drawing" width="500"/>
+<img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/repValue_episode170.png" alt="drawing" width="500"/>
 </p>
-The images above show the selected representation index for each segment for testing video at episode 1 and episode 50.
+The images above show the selected representation index for each segment for testing video at episode 1 and episode 170. after 50 episodes, the agent is able to avoid request heavy representation in the beginning which cause buffer overun.
 This is the reward over 50 episodes.
  <p align="center">
 <img src="contrib/dash-meets-ns3gym/ns3gym/paris/results/reward_over50episodes.png" alt="drawing" width="500"/>

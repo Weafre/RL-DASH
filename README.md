@@ -38,7 +38,7 @@ git clone https://github.com/peterbangert/dash-meets-ns3gym
 
 Examples
 ========
-1. Running heureustic algorithms (festive, panda...):
+1. Running heuristic algorithms (festive, panda...):
 ```
 ./waf --run="tcp-stream-bitrate --simulationId='testbw' --maxBuffer=50000000 --numberOfClients=1 --adaptationAlgo=festive --segmentDuration=2000000 --bitRate=100 --bwfile=contrib/bwtrace1.txt --segmentSizeFile=contrib/dash-meets-ns3gym/segmentSizes.txt"
 ```
